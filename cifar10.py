@@ -23,7 +23,7 @@ np.random.seed(SEED)
 class Linear(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc = nn.Linear(28 * 28, 10)
+        self.fc = nn.Linear(3*32 * 32, 10)
 
     def forward(self, x):
         x = x.flatten(1)
@@ -34,7 +34,7 @@ class Linear(nn.Module):
 class MLP(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(28 * 28, 128)
+        self.fc1 = nn.Linear(3*32 * 32, 128)
         self.fc2 = nn.Linear(128, 10)
         self.relu = nn.ReLU()
 
@@ -49,10 +49,10 @@ class MLP(nn.Module):
 class CNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
         self.relu1 = nn.ReLU()
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc2 = nn.Linear(16 * 14 * 14, 128)
+        self.fc2 = nn.Linear(16 * 16 * 16, 128)  # Must calculate the input size
         self.relu2 = nn.ReLU()
         self.fc3 = nn.Linear(128, 10)
 
@@ -69,19 +69,30 @@ class CNN(nn.Module):
 
 # Define dataloader
 def build_dataloader(batch_size):
+    # Set source of CIFAR-10 dataset
+    datasets.CIFAR10.url = (
+        "https://huggingface.co/datasets/MIT-OL-AI-D/"
+        "cifar-10-python/resolve/main/cifar-10-python.tar.gz"
+    )
+
     transform = transforms.Compose(
         [transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
     )
 
-    train_dataset = datasets.MNIST(
+    train_dataset = datasets.CIFAR10(
         root="./data", train=True, download=True, transform=transform
     )
-    test_dataset = datasets.MNIST(
+    test_dataset = datasets.CIFAR10(
         root="./data", train=False, download=True, transform=transform
     )
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    for images, labels in train_loader:
+        print(f"Shape of images: {images.shape}")
+        print(f"Shape of labels: {labels.shape}")
+        break
 
     return train_loader, test_loader
 
@@ -196,7 +207,7 @@ def main():
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=0.1)
-    parser.add_argument("--backbone", type=str, default="mlp")
+    parser.add_argument("--backbone", type=str, default="cnn")
     parser.add_argument("--optimizer", type=str, default="sgd")
     parser.add_argument("--criterion", type=str, default="cross_entropy")
     parser.add_argument("--device", type=str, default="mps")
