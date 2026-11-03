@@ -23,7 +23,7 @@ np.random.seed(SEED)
 class Linear(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc = nn.Linear(3*32 * 32, 10)
+        self.fc = nn.Linear(3 * 32 * 32, 10)
 
     def forward(self, x):
         x = x.flatten(1)
@@ -34,7 +34,7 @@ class Linear(nn.Module):
 class MLP(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(3*32 * 32, 128)
+        self.fc1 = nn.Linear(3 * 32 * 32, 128)
         self.fc2 = nn.Linear(128, 10)
         self.relu = nn.ReLU()
 
