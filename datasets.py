@@ -49,9 +49,4 @@ def build_dataloader(dataset, batch_size):
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-    for images, labels in train_loader:
-        print(f"Shape of images: {images.shape}")
-        print(f"Shape of labels: {labels.shape}")
-        break
-
     return train_loader, test_loader

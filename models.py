@@ -3,9 +3,9 @@ from torch import nn
 
 # Define models
 class Linear(nn.Module):
-    def __init__(self):
+    def __init__(self, in_channels, size, classes):
         super().__init__()
-        self.fc = nn.Linear(3 * 32 * 32, 100)
+        self.fc = nn.Linear(in_channels * size * size, classes)
 
     def forward(self, x):
         x = x.flatten(1)
@@ -14,10 +14,10 @@ class Linear(nn.Module):
 
 
 class MLP(nn.Module):
-    def __init__(self):
+    def __init__(self, in_channels, size, classes):
         super().__init__()
-        self.fc1 = nn.Linear(3 * 32 * 32, 128)
-        self.fc2 = nn.Linear(128, 100)
+        self.fc1 = nn.Linear(in_channels * size * size, 128)
+        self.fc2 = nn.Linear(128, classes)
         self.relu = nn.ReLU()
 
     def forward(self, x):
@@ -29,14 +29,16 @@ class MLP(nn.Module):
 
 
 class CNN(nn.Module):
-    def __init__(self):
+    def __init__(self, in_channels, size, classes):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
         self.relu1 = nn.ReLU()
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc2 = nn.Linear(16 * 16 * 16, 128)  # Must calculate the input size
+        self.fc2 = nn.Linear(
+            in_channels * size * size, 128
+        )  # Must calculate the input size
         self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(128, 100)
+        self.fc3 = nn.Linear(128, classes)
 
     def forward(self, x):
         x = self.conv1(x)

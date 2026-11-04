@@ -90,14 +90,27 @@ def main():
     # Build dataloader
     train_loader, test_loader = build_dataloader(args.dataset, args.batch_size)
 
+    for images, labels in train_loader:
+        shape_i = images.shape
+        shape_l = labels.shape
+        print(f"Shape of images: {shape_i}")
+        print(f"Shape of labels: {shape_l}")
+        break
+
     # Build model
     model = None
     if args.backbone == "mlp":
-        model = MLP().to(device)
+        model = MLP(
+            in_channels=shape_i[1], size=shape_i[2], classes=10
+        ).to(device)
     elif args.backbone == "cnn":
-        model = CNN().to(device)
+        model = CNN(
+            in_channels=shape_i[1], size=shape_i[2], classes=10
+        ).to(device)
     elif args.backbone == "linear":
-        model = Linear().to(device)
+        model = Linear(
+            in_channels=shape_i[1], size=shape_i[2], classes=10
+        ).to(device)
     else:
         raise ValueError(f"Unknown backbone: {args.backbone}")
 
