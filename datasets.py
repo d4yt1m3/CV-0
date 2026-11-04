@@ -1,6 +1,7 @@
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
+
 # Define dataloader
 def build_dataloader(batch_size):
     # Set source of CIFAR-100 dataset

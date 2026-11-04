@@ -1,5 +1,6 @@
 from torch import nn
 
+
 # Define models
 class Linear(nn.Module):
     def __init__(self):
@@ -10,6 +11,7 @@ class Linear(nn.Module):
         x = x.flatten(1)
         x = self.fc(x)
         return x
+
 
 class MLP(nn.Module):
     def __init__(self):
@@ -45,4 +47,3 @@ class CNN(nn.Module):
         x = self.relu2(x)
         x = self.fc3(x)
         return x
-    

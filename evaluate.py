@@ -1,5 +1,6 @@
 import torch
 
+
 # Define evaluate function
 @torch.no_grad()
 def evaluate(model, test_loader, criterion, device):
@@ -29,4 +30,3 @@ def evaluate(model, test_loader, criterion, device):
     test_loss = total_loss / len(test_loader)
     acc = correct / total
     return acc, test_loss
-

@@ -16,6 +16,7 @@ SEED = 42
 torch.manual_seed(SEED)
 np.random.seed(SEED)
 
+
 # Define train function
 def train(model, train_loader, test_loader, optimizer, criterion, epochs, device):
 
@@ -59,8 +60,6 @@ def train(model, train_loader, test_loader, optimizer, criterion, epochs, device
         # Print test acc
         print(f"Epoch {epoch}, Test Acc: {acc:.4f}")
     return loss_history, acc_history
-
-
 
 
 def main():
