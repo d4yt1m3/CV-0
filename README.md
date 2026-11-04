@@ -15,3 +15,9 @@ python train.py --dataset cifar10
                 --epochs 10
                 --device mps
 ```
+
+dataset: mnist, cifar10, cifar100
+backbone: linear, mlp, cnn
+optimizer: sgd, adam
+criterion: cross_entropy, mse
+device: cpu, cuda, mps
