@@ -8,7 +8,18 @@ plt.rcParams["font.sans-serif"] = ["Times New Roman"]
 
 
 # Define plot function
-def plot_loss_acc(loss_history, acc_history, epochs, backbone, optimizer):
+def plot_loss_acc(
+    loss_history,
+    acc_history,
+    dataset,
+    backbone,
+    optimizer,
+    criterion,
+    lr,
+    batch_size,
+    epochs,
+    device,
+):
     # Set figure size
     plt.figure(figsize=(8, 6))
 
@@ -28,7 +39,10 @@ def plot_loss_acc(loss_history, acc_history, epochs, backbone, optimizer):
     plt.tight_layout()
 
     # Save figure
-    if not os.path.exists("./images"):
-        os.makedirs("./images")
-    plt.savefig(f"./images/{backbone}_{optimizer}.png", dpi=300)
+    if not os.path.exists(f"./images/{dataset}"):
+        os.makedirs(f"./images/{dataset}")
+    plt.savefig(
+        f"./images/{backbone}_{optimizer}_{criterion}_{lr}_{batch_size}_{epochs}_{device}.png",
+        dpi=300,
+    )
     plt.close()

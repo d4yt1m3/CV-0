@@ -1,5 +1,7 @@
 # CV 实践
 
+方便对比不同模型架构的性能
+
 ## TODO
 
 1. 拓展模型架构
@@ -17,7 +19,11 @@ python train.py --dataset cifar10
 ```
 
 dataset: mnist, cifar10, cifar100
+
 backbone: linear, mlp, cnn
+
 optimizer: sgd, adam
+
 criterion: cross_entropy, mse
+
 device: cpu, cuda, mps
