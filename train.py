@@ -72,6 +72,7 @@ def main():
     parser.add_argument("--backbone", type=str, default="cnn")
     parser.add_argument("--optimizer", type=str, default="sgd")
     parser.add_argument("--criterion", type=str, default="cross_entropy")
+    parser.add_argument("--dataset", type=str, default="mnist")
     parser.add_argument("--device", type=str, default="mps")
     args = parser.parse_args()
 
@@ -87,7 +88,7 @@ def main():
     print(f"Using device: {device}")
 
     # Build dataloader
-    train_loader, test_loader = build_dataloader(args.batch_size)
+    train_loader, test_loader = build_dataloader(args.dataset, args.batch_size)
 
     # Build model
     model = None
