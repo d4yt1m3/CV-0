@@ -100,19 +100,16 @@ def main():
     # Build model
     model = None
     if args.backbone == "mlp":
-        model = MLP(
-            in_channels=shape_i[1], size=shape_i[2], classes=10
-        ).to(device)
+        model = MLP(in_channels=shape_i[1], size=shape_i[2], classes=10).to(device)
     elif args.backbone == "cnn":
-        model = CNN(
-            in_channels=shape_i[1], size=shape_i[2], classes=10
-        ).to(device)
+        model = CNN(in_channels=shape_i[1], size=shape_i[2], classes=10).to(device)
     elif args.backbone == "linear":
-        model = Linear(
-            in_channels=shape_i[1], size=shape_i[2], classes=10
-        ).to(device)
+        model = Linear(in_channels=shape_i[1], size=shape_i[2], classes=10).to(device)
     else:
         raise ValueError(f"Unknown backbone: {args.backbone}")
+
+    # Print num of model parameters
+    print(f"Num of model parameters: {sum(p.numel() for p in model.parameters())}")
 
     # Build optimizer
     optimizer = None
@@ -144,7 +141,18 @@ def main():
     )
 
     # Plot loss and acc
-    plot_loss_acc(loss_history, acc_history, args.epochs, args.backbone, args.optimizer)
+    plot_loss_acc(
+        loss_history,
+        acc_history,
+        args.dataset,
+        args.backbone,
+        args.optimizer,
+        args.criterion,
+        args.lr,
+        args.batch_size,
+        args.epochs,
+        device,
+    )
 
 
 if __name__ == "__main__":
