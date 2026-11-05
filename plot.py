@@ -45,4 +45,4 @@ def plot_loss_acc(
         f"./images/{dataset}/{backbone}_{optimizer}_{criterion}_{lr}_{batch_size}_{epochs}_{device}.png",
         dpi=300,
     )
-    plt.close()
+    return plt.gcf()

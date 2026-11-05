@@ -1,4 +1,15 @@
 import torch
+import torch.nn.functional as F
+from torch.nn import MSELoss
+
+
+def compute_loss(criterion, logits, labels):
+    """MSELoss expects probabilities and one-hot targets, not logits."""
+    if isinstance(criterion, MSELoss):
+        probs = torch.softmax(logits, dim=1)
+        targets = F.one_hot(labels, num_classes=logits.size(1)).float()
+        return criterion(probs, targets)
+    return criterion(logits, labels)
 
 
 # Define evaluate function
@@ -18,7 +29,7 @@ def evaluate(model, test_loader, criterion, device):
 
         # Forward pass
         logits = model(images)
-        loss = criterion(logits, labels)
+        loss = compute_loss(criterion, logits, labels)
 
         # Update loss history
         total_loss += loss.item()
@@ -30,3 +41,25 @@ def evaluate(model, test_loader, criterion, device):
     test_loss = total_loss / len(test_loader)
     acc = correct / total
     return acc, test_loss
+
+
+@torch.no_grad()
+def predict_all(model, loader, device):
+    """Return predictions, ground-truth labels and probabilities as numpy arrays."""
+    model.eval()
+
+    preds = []
+    labels_all = []
+    probs_all = []
+    for images, labels in loader:
+        images = images.to(device)
+        probs = torch.softmax(model(images), dim=1)
+        preds.append(probs.argmax(dim=1).cpu())
+        probs_all.append(probs.cpu())
+        labels_all.append(labels)
+
+    return (
+        torch.cat(preds).numpy(),
+        torch.cat(labels_all).numpy(),
+        torch.cat(probs_all).numpy(),
+    )

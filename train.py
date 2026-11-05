@@ -6,8 +6,8 @@ from torch.optim import SGD, Adam
 from torch.nn import CrossEntropyLoss, MSELoss
 from tqdm import tqdm
 
-from datasets import build_dataloader
-from evaluate import evaluate
+from datasets import build_dataloader, get_num_classes
+from evaluate import compute_loss, evaluate
 from models import Linear, MLP, CNN
 from plot import plot_loss_acc
 
@@ -17,8 +17,53 @@ torch.manual_seed(SEED)
 np.random.seed(SEED)
 
 
+# Define build helpers, shared by CLI and the web UI
+def build_model(backbone, in_channels, size, classes):
+    if backbone == "linear":
+        return Linear(in_channels=in_channels, size=size, classes=classes)
+    if backbone == "mlp":
+        return MLP(in_channels=in_channels, size=size, classes=classes)
+    if backbone == "cnn":
+        return CNN(in_channels=in_channels, size=size, classes=classes)
+    raise ValueError(f"Unknown backbone: {backbone}")
+
+
+def build_optimizer(name, params, lr):
+    if name == "sgd":
+        return SGD(params, lr=lr)
+    if name == "adam":
+        return Adam(params, lr=lr)
+    raise ValueError(f"Unknown optimizer: {name}")
+
+
+def build_criterion(name):
+    if name == "cross_entropy":
+        return CrossEntropyLoss()
+    if name == "mse":
+        return MSELoss()
+    raise ValueError(f"Unknown criterion: {name}")
+
+
+def resolve_device(name):
+    if name == "mps" and torch.backends.mps.is_available():
+        return torch.device("mps")
+    if name == "cuda" and torch.cuda.is_available():
+        return torch.device("cuda")
+    return torch.device("cpu")
+
+
 # Define train function
-def train(model, train_loader, test_loader, optimizer, criterion, epochs, device):
+def train(
+    model,
+    train_loader,
+    test_loader,
+    optimizer,
+    criterion,
+    epochs,
+    device,
+    on_epoch_end=None,
+    progress=True,
+):
 
     # Initialize loss and acc history
     loss_history = []
@@ -28,10 +73,10 @@ def train(model, train_loader, test_loader, optimizer, criterion, epochs, device
     for epoch in range(epochs):
 
         model.train()
-        pbar = tqdm(train_loader)  # for images, labels in train_loader:
+        iterator = tqdm(train_loader) if progress else train_loader
         epoch_loss = 0
 
-        for images, labels in pbar:
+        for images, labels in iterator:
             # Zero gradient
             optimizer.zero_grad()
             images = images.to(device)
@@ -39,7 +84,7 @@ def train(model, train_loader, test_loader, optimizer, criterion, epochs, device
 
             # Forward pass
             logits = model(images)
-            loss = criterion(logits, labels)
+            loss = compute_loss(criterion, logits, labels)
 
             # Backward pass
             loss.backward()
@@ -47,7 +92,8 @@ def train(model, train_loader, test_loader, optimizer, criterion, epochs, device
 
             batch_loss = loss.item()
             epoch_loss += batch_loss
-            pbar.set_description(f"Epoch {epoch}, Loss: {batch_loss:.4f}")
+            if progress:
+                iterator.set_description(f"Epoch {epoch}, Loss: {batch_loss:.4f}")
 
         # Update loss history
         epoch_loss = epoch_loss / len(train_loader)
@@ -59,6 +105,10 @@ def train(model, train_loader, test_loader, optimizer, criterion, epochs, device
 
         # Print test acc
         print(f"Epoch {epoch}, Test Acc: {acc:.4f}")
+
+        if on_epoch_end is not None:
+            on_epoch_end(epoch, epoch_loss, acc)
+
     return loss_history, acc_history
 
 
@@ -77,14 +127,7 @@ def main():
     args = parser.parse_args()
 
     # Set device
-    device = None
-    if args.device == "mps" and torch.backends.mps.is_available():
-        device = "mps"
-    elif args.device == "cuda" and torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
-    device = torch.device(device)
+    device = resolve_device(args.device)
     print(f"Using device: {device}")
 
     # Build dataloader
@@ -98,36 +141,21 @@ def main():
         break
 
     # Build model
-    model = None
-    if args.backbone == "mlp":
-        model = MLP(in_channels=shape_i[1], size=shape_i[2], classes=10).to(device)
-    elif args.backbone == "cnn":
-        model = CNN(in_channels=shape_i[1], size=shape_i[2], classes=10).to(device)
-    elif args.backbone == "linear":
-        model = Linear(in_channels=shape_i[1], size=shape_i[2], classes=10).to(device)
-    else:
-        raise ValueError(f"Unknown backbone: {args.backbone}")
+    model = build_model(
+        args.backbone,
+        in_channels=shape_i[1],
+        size=shape_i[2],
+        classes=get_num_classes(args.dataset),
+    ).to(device)
 
     # Print num of model parameters
     print(f"Num of model parameters: {sum(p.numel() for p in model.parameters())}")
 
     # Build optimizer
-    optimizer = None
-    if args.optimizer == "sgd":
-        optimizer = SGD(model.parameters(), lr=args.lr)
-    elif args.optimizer == "adam":
-        optimizer = Adam(model.parameters(), lr=args.lr)
-    else:
-        raise ValueError(f"Unknown optimizer: {args.optimizer}")
+    optimizer = build_optimizer(args.optimizer, model.parameters(), args.lr)
 
     # Build criterion
-    criterion = None
-    if args.criterion == "cross_entropy":
-        criterion = CrossEntropyLoss()
-    elif args.criterion == "mse":
-        criterion = MSELoss()
-    else:
-        raise ValueError(f"Unknown criterion: {args.criterion}")
+    criterion = build_criterion(args.criterion)
 
     # Train model
     loss_history, acc_history = train(

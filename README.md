@@ -27,3 +27,13 @@ optimizer: sgd, adam
 criterion: cross_entropy, mse
 
 device: cpu, cuda, mps
+
+## 可视化界面
+
+```bash
+uv sync
+uv run streamlit run app.py
+```
+
+左侧选数据集、模型、优化器、损失函数等参数并训练；每组实验结束后会进入对比表格，
+准确率 / Loss 曲线自动叠加，并可查看混淆矩阵和错分样本。适合给刚接触 CV 的新手做横向对比。

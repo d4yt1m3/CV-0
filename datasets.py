@@ -1,6 +1,15 @@
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
+# Number of classes per dataset
+NUM_CLASSES = {"mnist": 10, "cifar10": 10, "cifar100": 100}
+
+
+def get_num_classes(dataset):
+    if dataset not in NUM_CLASSES:
+        raise ValueError(f"Unknown dataset: {dataset}")
+    return NUM_CLASSES[dataset]
+
 
 # Define dataloader
 def build_dataloader(dataset, batch_size):
