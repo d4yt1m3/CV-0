@@ -1,4 +1,5 @@
 __pycache__
+.venv/
 .vscode/
 data/
 第一次上机.pdf
